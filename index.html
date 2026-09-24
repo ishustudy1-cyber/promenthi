@@ -420,8 +420,14 @@
         // Global Firebase handles
         let app, db, auth, currentUser = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'promenthi-study-app-default';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
+const firebaseConfig = {
+            apiKey: "AIzaSyCehnv5qgTHaYKPGpaltqH5_QfGcU5dbYY",
+            authDomain: "promenthi.firebaseapp.com",
+            projectId: "promenthi",
+            storageBucket: "promenthi.firebasestorage.app",
+            messagingSenderId: "732312330563",
+            appId: "1:732312330563:web:9055e6a3a2e89a86014ff6"
+        };
         // Application State
         window.appState = {
             mode: 'pomodoro', // 'pomodoro' or 'custom'
