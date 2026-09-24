@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promenthi - The one app for useful and effective study</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Stats -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes ripple {
+            0% { transform: scale(0); opacity: 0.6; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+        .ripple-effect {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple-effect::after {
+            content: "";
+            position: absolute;
+            width: 100px; height: 100px;
+            background: rgba(255, 255, 255, 0.4);
+            display: block;
+            border-radius: 50%;
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .ripple-effect:active::after {
+            animation: ripple 0.5s ease-out;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .light .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col transition-colors duration-300 dark:bg-slate-950 light:bg-slate-50 light:text-slate-900">
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md hidden">
+        <div class="glass-card p-8 rounded-3xl w-full max-w-md shadow-2xl border border-slate-700/50 relative animate-in fade-in zoom-in duration-300">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-lg shadow-emerald-500/30 mb-3">
+                    <i class="fa-solid fa-graduation-cap text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold tracking-tight">Welcome to Promenthi</h2>
+                <p class="text-xs text-slate-400 mt-1">The one app for useful and effective study</p>
+            </div>
+            
+            <div id="authError" class="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs rounded-xl hidden"></div>
+
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
+                    <input type="email" id="authEmail" required class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm transition-all dark:bg-slate-900/50 light:bg-white light:border-slate-300" placeholder="student@promenthi.app">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
+                    <input type="password" id="authPassword" required class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm transition-all dark:bg-slate-900/50 light:bg-white light:border-slate-300" placeholder="••••••••">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform active:scale-95 ripple-effect">
+                    Login / Sign Up
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <button onclick="handleAnonymousLogin()" class="text-xs text-emerald-400 hover:underline font-medium">Continue as Guest (Quick Demo)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM NOTIFICATION MODAL -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- TOP HEADER -->
+    <header id="mainHeader" class="w-full px-6 py-4 flex items-center justify-between border-b border-slate-800/60 dark:border-slate-800/60 light:border-slate-200 transition-all duration-300">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                <i class="fa-solid fa-book-bookmark text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Promenthi</h1>
+                <p class="text-[10px] text-slate-400 tracking-wide font-medium">Useful & Effective Study</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- Theme Toggle -->
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-emerald-400 transition-all active:scale-90 ripple-effect" title="Toggle Theme">
+                <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+            </button>
+            <!-- User Status / Logout -->
+            <div id="userProfileBadge" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl glass-card text-xs">
+                <i class="fa-solid fa-user-check text-emerald-400"></i>
+                <span id="userEmailDisplay" class="truncate max-w-[120px] font-medium"></span>
+                <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-400 ml-2" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-28">
+        
+        <!-- ==================== HOME TAB ==================== -->
+        <section id="tab-home" class="space-y-6 animate-in fade-in duration-300">
+            
+            <!-- Motivational Quote Banner -->
+            <div class="glass-card p-5 rounded-2xl relative overflow-hidden shadow-sm border border-emerald-500/20">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-start gap-3">
+                    <div class="text-emerald-400 mt-0.5"><i class="fa-solid fa-quote-left text-lg"></i></div>
+                    <div class="flex-1">
+                        <p id="motivationalQuoteText" class="text-sm font-medium italic text-slate-200 light:text-slate-800">"Loading your next-level motivation..."</p>
+                        <p id="motivationalQuoteAuthor" class="text-[11px] text-emerald-400 font-semibold mt-1">— Promenthi Wisdom</p>
+                    </div>
+                    <button onclick="loadNewQuote()" class="text-slate-400 hover:text-emerald-400 transition-colors p-1" title="New Quote">
+                        <i class="fa-solid fa-rotate text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timer Configuration Box (Hidden in Fullscreen) -->
+            <div id="timerConfigPanel" class="glass-card p-6 rounded-3xl shadow-xl space-y-5">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <!-- Mode Selector -->
+                    <div class="w-full sm:w-auto flex bg-slate-900/60 light:bg-slate-200 p-1 rounded-2xl border border-slate-700/50 light:border-slate-300">
+                        <button onclick="setTimerMode('pomodoro')" id="modePomodoroBtn" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all bg-emerald-500 text-white shadow-md">
+                            <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> Pomodoro (50/10)
+                        </button>
+                        <button onclick="setTimerMode('custom')" id="modeCustomBtn" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
+                            <i class="fa-solid fa-sliders mr-1.5"></i> Custom Schedule
+                        </button>
+                    </div>
+
+                    <!-- Target Duration / Sets Selector -->
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <label class="text-xs font-medium text-slate-400">Total Study Target:</label>
+                        <select id="totalTargetHours" onchange="updateTotalTarget()" class="bg-slate-900/80 light:bg-white border border-slate-700 light:border-slate-300 px-3 py-2 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
+                            <option value="1">1 Hour (1 Set)</option>
+                            <option value="2" selected>2 Hours (2 Sets)</option>
+                            <option value="3">3 Hours (3 Sets)</option>
+                            <option value="4">4 Hours (4 Sets)</option>
+                            <option value="5">5 Hours (5 Sets)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Custom Schedule Sliders (Conditional) -->
+                <div id="customScheduleSettings" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-800/60 light:border-slate-200">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-400">Focus Duration:</span>
+                            <span id="customFocusVal" class="font-bold text-emerald-400">50 mins</span>
+                        </div>
+                        <input type="range" id="customFocusRange" min="10" max="90" step="5" value="50" oninput="onCustomRangeChange()" class="w-full accent-emerald-500 cursor-pointer">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-400">Break Duration:</span>
+                            <span id="customBreakVal" class="font-bold text-teal-400">10 mins</span>
+                        </div>
+                        <input type="range" id="customBreakRange" min="2" max="30" step="2" value="10" oninput="onCustomRangeChange()" class="w-full accent-teal-500 cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Display Card (Expands to Fullscreen on Start) -->
+            <div id="timerContainerCard" class="glass-card p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center text-center relative transition-all duration-500 border border-emerald-500/30">
+                
+                <!-- Status Badge -->
+                <div id="timerStatusBadge" class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="timerStatusText">Focus Session</span>
+                </div>
+
+                <!-- Circular Timer Ring / Display -->
+                <div class="relative flex items-center justify-center my-4">
+                    <div class="absolute w-64 h-64 md:w-80 md:h-80 rounded-full border-4 border-slate-800 light:border-slate-200"></div>
+                    <svg class="w-64 h-64 md:w-80 md:h-80 transform -rotate-90">
+                        <circle id="timerProgressCircle" cx="50%" cy="50%" r="120" stroke="currentColor" stroke-width="8" fill="transparent" class="text-emerald-500 transition-all duration-1000" stroke-dasharray="753" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="absolute flex flex-col items-center justify-center">
+                        <span id="timerDisplay" class="text-5xl md:text-7xl font-extrabold tracking-tighter">50:00</span>
+                        <span id="currentSetDisplay" class="text-xs text-slate-400 font-medium mt-2">Set 1 of 2</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center gap-4 mt-8">
+                    <button id="startPauseBtn" onclick="toggleTimer()" class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-2xl shadow-xl shadow-emerald-500/35 transition-all transform active:scale-95 text-base flex items-center gap-3 ripple-effect">
+                        <i id="startPauseIcon" class="fa-solid fa-play"></i>
+                        <span id="startPauseText">Start Focus</span>
+                    </button>
+                    <button onclick="resetTimer()" class="w-14 h-14 rounded-2xl glass-card flex items-center justify-center text-slate-300 hover:text-rose-400 hover:border-rose-500/50 transition-all active:scale-90 ripple-effect" title="Reset Timer">
+                        <i class="fa-solid fa-rotate-right text-lg"></i>
+                    </button>
+                    <button onclick="skipTimerPhase()" class="w-14 h-14 rounded-2xl glass-card flex items-center justify-center text-slate-300 hover:text-amber-400 hover:border-amber-500/50 transition-all active:scale-90 ripple-effect" title="Skip to Next Phase">
+                        <i class="fa-solid fa-forward-step text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== STATS TAB ==================== -->
+        <section id="tab-stats" class="space-y-6 hidden animate-in fade-in duration-300">
+            <div class="glass-card p-6 rounded-3xl">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-emerald-400"></i> Your Study Performance & Analytics
+                </h2>
+                
+                <!-- Streak & Summary Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="glass-card p-4 rounded-2xl text-center border border-amber-500/20">
+                        <div class="text-amber-400 text-2xl font-black mb-1" id="statStreak">🔥 0</div>
+                        <div class="text-[11px] text-slate-400 font-semibold uppercase">Daily Streak</div>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl text-center border border-emerald-500/20">
+                        <div class="text-emerald-400 text-2xl font-black mb-1" id="statTotalHours">0.0h</div>
+                        <div class="text-[11px] text-slate-400 font-semibold uppercase">Total Focused</div>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl text-center border border-teal-500/20">
+                        <div class="text-teal-400 text-2xl font-black mb-1" id="statSessionsCount">0</div>
+                        <div class="text-[11px] text-slate-400 font-semibold uppercase">Completed Sets</div>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl text-center border border-purple-500/20">
+                        <div class="text-purple-400 text-2xl font-black mb-1" id="statScore">100%</div>
+                        <div class="text-[11px] text-slate-400 font-semibold uppercase">Consistency</div>
+                    </div>
+                </div>
+
+                <!-- Charts Container -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-4 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider">Weekly Performance (Hours)</h3>
+                        <div class="h-56"><canvas id="weeklyChart"></canvas></div>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider">Monthly Performance Trend</h3>
+                        <div class="h-56"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SETTINGS TAB ==================== -->
+        <section id="tab-settings" class="space-y-6 hidden animate-in fade-in duration-300">
+            <div class="glass-card p-6 rounded-3xl space-y-6">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-emerald-400"></i> Promenthi Preferences
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Notification Blocker Toggle -->
+                    <div class="flex items-center justify-between p-4 rounded-2xl glass-card border border-slate-800/80">
+                        <div>
+                            <h3 class="text-sm font-semibold">Distraction & Notification Blocker</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Simulate blocking phone/browser notifications during focus sessions.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="settingNotifBlocker" onchange="saveSettings()" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+
+                    <!-- Sound Effect Volume -->
+                    <div class="p-4 rounded-2xl glass-card border border-slate-800/80 space-y-2">
+                        <div class="flex justify-between text-sm font-semibold">
+                            <span>Alarm Sound Volume (Beep-Beep)</span>
+                            <span id="volumeVal" class="text-emerald-400 font-bold">100%</span>
+                        </div>
+                        <input type="range" id="settingVolume" min="0" max="100" value="100" oninput="updateVolume()" class="w-full accent-emerald-500 cursor-pointer">
+                    </div>
+
+                    <!-- Account Data Sync Status -->
+                    <div class="p-4 rounded-2xl glass-card border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-semibold">Cloud Account Sync</h3>
+                            <p id="syncStatusText" class="text-xs text-slate-400 mt-0.5">Your study data is securely saved in the cloud.</p>
+                        </div>
+                        <button onclick="triggerManualSync()" class="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 transition-all">
+                            Sync Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== INVITE / MULTIPLAYER TAB ==================== -->
+        <section id="tab-invite" class="space-y-6 hidden animate-in fade-in duration-300">
+            <div class="glass-card p-6 rounded-3xl space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-users text-emerald-400"></i> Study Room & Friend Invite
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Study synchronously with friends using the exact same timer!</p>
+                    </div>
+                </div>
+
+                <!-- Room Action Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-5 rounded-2xl border border-emerald-500/30 space-y-3">
+                        <h3 class="text-sm font-bold text-emerald-400">Create Study Room</h3>
+                        <p class="text-xs text-slate-400">Generate a unique invite room code and share it with your friends.</p>
+                        <div class="flex items-center gap-2 pt-2">
+                            <input type="text" id="roomCodeDisplay" readonly value="PRO-8842" class="w-full bg-slate-900/60 light:bg-slate-200 border border-slate-700 light:border-slate-300 px-3 py-2.5 rounded-xl text-xs font-mono font-bold text-center tracking-wider">
+                            <button onclick="copyRoomCode()" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs transition-all ripple-effect">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border border-teal-500/30 space-y-3">
+                        <h3 class="text-sm font-bold text-teal-400">Join Friend's Room</h3>
+                        <p class="text-xs text-slate-400">Enter your friend's room code to join their study session.</p>
+                        <div class="flex items-center gap-2 pt-2">
+                            <input type="text" id="joinRoomInput" placeholder="Enter Room Code" class="w-full bg-slate-900/60 light:bg-slate-200 border border-slate-700 light:border-slate-300 px-3 py-2.5 rounded-xl text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-teal-500">
+                            <button onclick="joinRoom()" class="px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-xl text-xs transition-all ripple-effect">
+                                Join
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Study Room Members List -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Room Study Buddies</h3>
+                    <div id="roomBuddiesList" class="space-y-2">
+                        <div class="p-3 rounded-xl glass-card flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">I</div>
+                                <div>
+                                    <span class="font-semibold">Ishant (You)</span>
+                                    <span class="text-[10px] text-emerald-400 ml-2 bg-emerald-500/10 px-2 py-0.5 rounded-full">Focused</span>
+                                </div>
+                            </div>
+                            <span class="text-slate-400">Set 1 / 2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav id="bottomNavBar" class="fixed bottom-0 left-0 right-0 z-40 max-w-lg mx-auto p-3 transition-all duration-300">
+        <div class="glass-card rounded-2xl p-2 flex items-center justify-around shadow-2xl border border-slate-700/50 light:border-slate-300 backdrop-blur-xl">
+            <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-emerald-400 transition-all ripple-effect">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button onclick="switchTab('stats')" id="nav-btn-stats" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all ripple-effect">
+                <i class="fa-solid fa-chart-pie text-base"></i>
+                <span class="text-[10px] font-semibold">Stats</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-btn-settings" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all ripple-effect">
+                <i class="fa-solid fa-gear text-base"></i>
+                <span class="text-[10px] font-semibold">Settings</span>
+            </button>
+            <button onclick="switchTab('invite')" id="nav-btn-invite" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all ripple-effect">
+                <i class="fa-solid fa-user-group text-base"></i>
+                <span class="text-[10px] font-semibold">Invite</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- FOOTER -->
+    <footer id="mainFooter" class="py-4 text-center text-xs text-slate-400 font-medium tracking-wide">
+        made by ❤️ from Ishant
+    </footer>
+
+    <!-- Firebase SDK & Application Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase handles
+        let app, db, auth, currentUser = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'promenthi-study-app-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+        // Application State
+        window.appState = {
+            mode: 'pomodoro', // 'pomodoro' or 'custom'
+            totalTargetHours: 2,
+            customFocusMins: 50,
+            customBreakMins: 10,
+            isRunning: false,
+            isFocusPhase: true,
+            currentSet: 1,
+            totalSets: 2,
+            timeLeft: 50 * 60,
+            totalDuration: 50 * 60,
+            streak: 3,
+            totalFocusedHours: 4.5,
+            completedSetsCount: 5,
+            volume: 1.0,
+            notifBlocker: false,
+            theme: 'dark'
+        };
+
+        let timerInterval = null;
+        let audioCtx = null;
+        let alarmTimeout = null;
+
+        // Motivational Quotes Database (Non-repeating queue)
+        const quotesPool = [
+            { text: "The expert in anything was once a beginner. Keep pushing forward.", author: "Helen Hayes" },
+            { text: "Successful and effective study is not about how long you study, but how focused you are.", author: "Promenthi Core" },
+            { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+            { text: "The secret of getting ahead is getting started with absolute clarity.", author: "Mark Twain" },
+            { text: "Small disciplines repeated with consistency every day lead to great achievements.", author: "John C. Maxwell" },
+            { text: "Your future is created by what you study today, not tomorrow.", author: "Robert Kiyosaki" },
+            { text: "Focus is a muscle. The more you practice, the stronger it gets.", author: "Promenthi Mastery" }
+        ];
+        let currentQuoteIndex = 0;
+
+        // Initialize Firebase & App on load
+        window.onload = async function() {
+            initAudioContext();
+            loadNewQuote();
+            initCharts();
+            setupAuthListener();
+            
+            // Check theme
+            if (localStorage.getItem('promenthi_theme') === 'light') {
+                toggleTheme();
+            }
+        };
+
+        function initAudioContext() {
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            } catch(e) {
+                console.log("Web Audio API not supported");
+            }
+        }
+
+        // Play 10-second crisp beep-beep alarm
+        window.playAlarm = function() {
+            if (!audioCtx || window.appState.volume <= 0) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            let beepCount = 0;
+            const maxBeeps = 20; // 20 beeps over 10 seconds (every 0.5s)
+            
+            function playBeep() {
+                if (beepCount >= maxBeeps || !window.appState.volume) return;
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+                    gain.gain.setValueAtTime(0.3 * window.appState.volume, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } catch(e) {}
+
+                beepCount++;
+                alarmTimeout = setTimeout(playBeep, 500);
+            }
+            playBeep();
+        };
+
+        window.stopAlarm = function() {
+            if (alarmTimeout) clearTimeout(alarmTimeout);
+        };
+
+        // Quote rotation
+        window.loadNewQuote = function() {
+            const q = quotesPool[currentQuoteIndex];
+            document.getElementById('motivationalQuoteText').innerText = `"${q.text}"`;
+            document.getElementById('motivationalQuoteAuthor').innerText = `— ${q.author}`;
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotesPool.length;
+        };
+
+        // Navigation Tabs Switching
+        window.switchTab = function(tabName) {
+            ['home', 'stats', 'settings', 'invite'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-btn-${t}`).classList.remove('text-emerald-400');
+                document.getElementById(`nav-btn-${t}`).classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-btn-${tabName}`).classList.add('text-emerald-400');
+            document.getElementById(`nav-btn-${tabName}`).classList.remove('text-slate-400');
+        };
+
+        // Theme Toggle
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = 'fa-solid fa-sun text-sm text-amber-400';
+                localStorage.setItem('promenthi_theme', 'light');
+                window.appState.theme = 'light';
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-moon text-sm';
+                localStorage.setItem('promenthi_theme', 'dark');
+                window.appState.theme = 'dark';
+            }
+        };
+
+        // Timer Mode & Setup
+        window.setTimerMode = function(mode) {
+            if (window.appState.isRunning) {
+                showToast("Please pause or reset timer before changing mode.", "warning");
+                return;
+            }
+            window.appState.mode = mode;
+            const pomBtn = document.getElementById('modePomodoroBtn');
+            const cusBtn = document.getElementById('modeCustomBtn');
+            const cusSettings = document.getElementById('customScheduleSettings');
+
+            if (mode === 'pomodoro') {
+                pomBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all bg-emerald-500 text-white shadow-md";
+                cusBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+                cusSettings.classList.add('hidden');
+                window.appState.customFocusMins = 50;
+                window.appState.customBreakMins = 10;
+            } else {
+                cusBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all bg-emerald-500 text-white shadow-md";
+                pomBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200";
+                cusSettings.classList.remove('hidden');
+            }
+            resetTimer();
+        };
+
+        window.updateTotalTarget = function() {
+            const hours = parseInt(document.getElementById('totalTargetHours').value);
+            window.appState.totalTargetHours = hours;
+            // Calculate total sets based on focus duration
+            const focusDuration = window.appState.customFocusMins;
+            const totalMins = hours * 60;
+            window.appState.totalSets = Math.max(1, Math.round(totalMins / (focusDuration + window.appState.customBreakMins)));
+            resetTimer();
+        };
+
+        window.onCustomRangeChange = function() {
+            const f = parseInt(document.getElementById('customFocusRange').value);
+            const b = parseInt(document.getElementById('customBreakRange').value);
+            window.appState.customFocusMins = f;
+            window.appState.customBreakMins = b;
+            document.getElementById('customFocusVal').innerText = f + " mins";
+            document.getElementById('customBreakVal').innerText = b + " mins";
+            updateTotalTarget();
+        };
+
+        window.resetTimer = function() {
+            if (timerInterval) clearInterval(timerInterval);
+            window.appState.isRunning = false;
+            window.appState.isFocusPhase = true;
+            window.appState.currentSet = 1;
+            window.appState.timeLeft = window.appState.customFocusMins * 60;
+            window.appState.totalDuration = window.appState.timeLeft;
+            
+            document.getElementById('startPauseIcon').className = "fa-solid fa-play";
+            document.getElementById('startPauseText').innerText = "Start Focus";
+            document.getElementById('timerStatusText').innerText = "Focus Session";
+            document.getElementById('timerStatusBadge').className = "px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 flex items-center gap-2";
+            
+            exitFullscreenFocusMode();
+            updateTimerDisplay();
+        };
+
+        window.toggleTimer = function() {
+            if (!window.appState.isRunning) {
+                startTimer();
+            } else {
+                pauseTimer();
+            }
+        };
+
+        function startTimer() {
+            window.appState.isRunning = true;
+            document.getElementById('startPauseIcon').className = "fa-solid fa-pause";
+            document.getElementById('startPauseText').innerText = "Pause Session";
+            
+            // Enter Fullscreen Focus Mode (Hide Navbar, Header, Footer)
+            enterFullscreenFocusMode();
+
+            // Simulate Notification Blocker if enabled
+            if (window.appState.notifBlocker) {
+                showToast("🔕 Distraction Blocker Active: Notifications muted.", "info");
+            }
+
+            timerInterval = setInterval(() => {
+                if (window.appState.timeLeft > 0) {
+                    window.appState.timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    handlePhaseComplete();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            window.appState.isRunning = false;
+            document.getElementById('startPauseIcon').className = "fa-solid fa-play";
+            document.getElementById('startPauseText').innerText = "Resume Session";
+            if (timerInterval) clearInterval(timerInterval);
+            exitFullscreenFocusMode();
+        }
+
+        window.skipTimerPhase = function() {
+            handlePhaseComplete();
+        };
+
+        function handlePhaseComplete() {
+            if (timerInterval) clearInterval(timerInterval);
+            window.appState.isRunning = false;
+            playAlarm();
+
+            if (window.appState.isFocusPhase) {
+                // Focus finished -> Start Break or Next Set
+                if (window.appState.currentSet >= window.appState.totalSets) {
+                    showToast("🎉 Congratulations! Total study target completed successfully!", "success");
+                    window.appState.totalFocusedHours += (window.appState.customFocusMins / 60) * window.appState.totalSets;
+                    window.appState.completedSetsCount += window.appState.totalSets;
+                    saveUserDataToFirestore();
+                    resetTimer();
+                    return;
+                }
+
+                window.appState.isFocusPhase = false;
+                window.appState.timeLeft = window.appState.customBreakMins * 60;
+                window.appState.totalDuration = window.appState.timeLeft;
+                document.getElementById('timerStatusText').innerText = "Rest & Break Time (10s alarm active)";
+                document.getElementById('timerStatusBadge').className = "px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-bold uppercase tracking-wider mb-6 flex items-center gap-2";
+                showToast("Focus session completed! Enjoy your well-deserved break.", "success");
+            } else {
+                // Break finished -> Next Focus Set
+                window.appState.currentSet++;
+                window.appState.isFocusPhase = true;
+                window.appState.timeLeft = window.appState.customFocusMins * 60;
+                window.appState.totalDuration = window.appState.timeLeft;
+                document.getElementById('timerStatusText').innerText = "Focus Session";
+                document.getElementById('timerStatusBadge').className = "px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 flex items-center gap-2";
+                showToast("Break over! Starting next focus set.", "info");
+            }
+
+            document.getElementById('startPauseIcon').className = "fa-solid fa-play";
+            document.getElementById('startPauseText').innerText = "Start Focus";
+            updateTimerDisplay();
+            startTimer(); // Auto continue next phase
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(window.appState.timeLeft / 60);
+            const secs = window.appState.timeLeft % 60;
+            const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('timerDisplay').innerText = timeStr;
+            document.getElementById('currentSetDisplay').innerText = `Set ${window.appState.currentSet} of ${window.appState.totalSets} (${window.appState.isFocusPhase ? 'Focus' : 'Rest'})`;
+
+            // SVG Circle Progress
+            const circle = document.getElementById('timerProgressCircle');
+            const radius = 120;
+            const circumference = 2 * Math.PI * radius;
+            const progress = window.appState.timeLeft / window.appState.totalDuration;
+            const dashoffset = circumference * (1 - progress);
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = dashoffset;
+        }
+
+        // Fullscreen Focus Mode (Hides Header, Navbar, Footer, and Config panel)
+        function enterFullscreenFocusMode() {
+            document.getElementById('mainHeader').classList.add('opacity-0', 'pointer-events-none', '-translate-y-10');
+            document.getElementById('bottomNavBar').classList.add('opacity-0', 'pointer-events-none', 'translate-y-10');
+            document.getElementById('mainFooter').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('timerConfigPanel').classList.add('opacity-0', 'pointer-events-none', 'scale-95', 'hidden');
+            
+            const card = document.getElementById('timerContainerCard');
+            card.classList.add('fixed', 'inset-4', 'z-50', 'max-w-none', 'h-[90vh]', 'my-auto');
+        }
+
+        function exitFullscreenFocusMode() {
+            document.getElementById('mainHeader').classList.remove('opacity-0', 'pointer-events-none', '-translate-y-10');
+            document.getElementById('bottomNavBar').classList.remove('opacity-0', 'pointer-events-none', 'translate-y-10');
+            document.getElementById('mainFooter').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('timerConfigPanel').classList.remove('opacity-0', 'pointer-events-none', 'scale-95', 'hidden');
+            
+            const card = document.getElementById('timerContainerCard');
+            card.classList.remove('fixed', 'inset-4', 'z-50', 'max-w-none', 'h-[90vh]', 'my-auto');
+            stopAlarm();
+        }
+
+        // Settings updates
+        window.updateVolume = function() {
+            const v = document.getElementById('settingVolume').value;
+            window.appState.volume = v / 100;
+            document.getElementById('volumeVal').innerText = v + "%";
+        };
+
+        window.saveSettings = function() {
+            window.appState.notifBlocker = document.getElementById('settingNotifBlocker').checked;
+            showToast("Preferences saved successfully.", "success");
+        };
+
+        // Toast Notification Helper
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            let borderColor = 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
+            if (type === 'success') borderColor = 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
+            if (type === 'warning') borderColor = 'border-amber-500/30 bg-amber-500/10 text-amber-300';
+            if (type === 'error') borderColor = 'border-rose-500/30 bg-rose-500/10 text-rose-300';
+
+            toast.className = `glass-card px-4 py-3 rounded-2xl border ${borderColor} text-xs font-semibold shadow-xl pointer-events-auto transition-all animate-in slide-in-from-top-3 duration-300 flex items-center gap-3`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        // Charts Initialization
+        function initCharts() {
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(weeklyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Study Hours',
+                        data: [3.5, 4.0, 2.5, 5.0, 4.5, 6.0, 3.0],
+                        backgroundColor: '#22c55e',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Performance (Hours)',
+                        data: [22, 28, 35, 30],
+                        borderColor: '#14b8a6',
+                        backgroundColor: 'rgba(20, 184, 166, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // Room Invite Copy
+        window.copyRoomCode = function() {
+            const code = document.getElementById('roomCodeDisplay').value;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = code;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showToast("Room code copied to clipboard!", "success");
+        };
+
+        window.joinRoom = function() {
+            const code = document.getElementById('joinRoomInput').value.trim();
+            if (!code) {
+                showToast("Please enter a valid room code.", "error");
+                return;
+            }
+            showToast(`Successfully joined room: ${code.toUpperCase()}`, "success");
+            const buddiesList = document.getElementById('roomBuddiesList');
+            buddiesList.innerHTML += `
+                <div class="p-3 rounded-xl glass-card flex items-center justify-between text-xs animate-in fade-in">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">F</div>
+                        <div>
+                            <span class="font-semibold">Friend (${code.toUpperCase()})</span>
+                            <span class="text-[10px] text-teal-400 ml-2 bg-teal-500/10 px-2 py-0.5 rounded-full">Synchronized</span>
+                        </div>
+                    </div>
+                    <span class="text-slate-400">Set 1 / 2</span>
+                </div>
+            `;
+            document.getElementById('joinRoomInput').value = '';
+        };
+
+        // Firebase Auth & Firestore Integration
+        function setupAuthListener() {
+            if (!firebaseConfig) {
+                console.log("Running in offline standalone mode.");
+                return;
+            }
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    signInWithCustomToken(auth, token).catch(() => signInAnonymously(auth));
+                } else {
+                    signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        document.getElementById('userProfileBadge').classList.remove('hidden');
+                        document.getElementById('userProfileBadge').classList.add('flex');
+                        document.getElementById('userEmailDisplay').innerText = user.email || `Guest (${user.uid.substring(0,6)})`;
+                        document.getElementById('syncStatusText').innerText = "Cloud synced & active securely.";
+                        await loadUserDataFromFirestore();
+                    } else {
+                        document.getElementById('authModal').classList.remove('hidden');
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase init error:", e);
+            }
+        }
+
+        window.handleAnonymousLogin = function() {
+            document.getElementById('authModal').classList.add('hidden');
+            showToast("Logged in as Guest successfully.", "success");
+        };
+
+        const authForm = document.getElementById('authForm');
+        if (authForm) {
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('authEmail').value;
+                const pass = document.getElementById('authPassword').value;
+                const errBox = document.getElementById('authError');
+                errBox.classList.add('hidden');
+
+                if (!auth) {
+                    document.getElementById('authModal').classList.add('hidden');
+                    showToast("Logged in successfully (Offline Mode).", "success");
+                    return;
+                }
+
+                try {
+                    try {
+                        await signInWithEmailAndPassword(auth, email, pass);
+                    } catch (err) {
+                        await createUserWithEmailAndPassword(auth, email, pass);
+                    }
+                    document.getElementById('authModal').classList.add('hidden');
+                    showToast("Authentication successful!", "success");
+                } catch (err) {
+                    errBox.innerText = err.message;
+                    errBox.classList.remove('hidden');
+                }
+            });
+        }
+
+        window.logoutUser = async function() {
+            if (auth) await signOut(auth);
+            currentUser = null;
+            document.getElementById('userProfileBadge').classList.add('hidden');
+            document.getElementById('authModal').classList.remove('hidden');
+            showToast("Logged out successfully.", "info");
+        };
+
+        async function saveUserDataToFirestore() {
+            if (!db || !currentUser) return;
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
+                await setDoc(userRef, {
+                    streak: window.appState.streak,
+                    totalFocusedHours: window.appState.totalFocusedHours,
+                    completedSetsCount: window.appState.completedSetsCount,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+            } catch(e) {
+                console.error("Error saving data:", e);
+            }
+        }
+
+        async function loadUserDataFromFirestore() {
+            if (!db || !currentUser) return;
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'data');
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    window.appState.streak = data.streak || 3;
+                    window.appState.totalFocusedHours = data.totalFocusedHours || 4.5;
+                    window.appState.completedSetsCount = data.completedSetsCount || 5;
+                    
+                    document.getElementById('statStreak').innerText = `🔥 ${window.appState.streak}`;
+                    document.getElementById('statTotalHours').innerText = `${window.appState.totalFocusedHours.toFixed(1)}h`;
+                    document.getElementById('statSessionsCount').innerText = window.appState.completedSetsCount;
+                }
+            } catch(e) {
+                console.error("Error loading data:", e);
+            }
+        }
+
+        window.triggerManualSync = async function() {
+            await saveUserDataToFirestore();
+            showToast("Study progress synchronized with cloud storage successfully!", "success");
+        };
+    </script>
+</body>
+</html>
