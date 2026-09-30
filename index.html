@@ -326,65 +326,9 @@
             </div>
         </section>
 
-        <!-- ==================== INVITE / MULTIPLAYER TAB ==================== -->
-        <section id="tab-invite" class="space-y-6 hidden animate-in fade-in duration-300">
-            <div class="glass-card p-6 rounded-3xl space-y-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-lg font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-users text-emerald-400"></i> Study Room & Friend Invite
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Study synchronously with friends using the exact same timer!</p>
-                    </div>
-                </div>
-
-                <!-- Room Action Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="glass-card p-5 rounded-2xl border border-emerald-500/30 space-y-3">
-                        <h3 class="text-sm font-bold text-emerald-400">Create Study Room</h3>
-                        <p class="text-xs text-slate-400">Generate a unique invite room code and share it with your friends.</p>
-                        <div class="flex items-center gap-2 pt-2">
-                            <input type="text" id="roomCodeDisplay" readonly value="PRO-8842" class="w-full bg-slate-900/60 light:bg-slate-200 border border-slate-700 light:border-slate-300 px-3 py-2.5 rounded-xl text-xs font-mono font-bold text-center tracking-wider">
-                            <button onclick="copyRoomCode()" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl text-xs transition-all ripple-effect">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-5 rounded-2xl border border-teal-500/30 space-y-3">
-                        <h3 class="text-sm font-bold text-teal-400">Join Friend's Room</h3>
-                        <p class="text-xs text-slate-400">Enter your friend's room code to join their study session.</p>
-                        <div class="flex items-center gap-2 pt-2">
-                            <input type="text" id="joinRoomInput" placeholder="Enter Room Code" class="w-full bg-slate-900/60 light:bg-slate-200 border border-slate-700 light:border-slate-300 px-3 py-2.5 rounded-xl text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-teal-500">
-                            <button onclick="joinRoom()" class="px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-xl text-xs transition-all ripple-effect">
-                                Join
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Active Study Room Members List -->
-                <div class="space-y-3">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Room Study Buddies</h3>
-                    <div id="roomBuddiesList" class="space-y-2">
-                        <div class="p-3 rounded-xl glass-card flex items-center justify-between text-xs">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">I</div>
-                                <div>
-                                    <span class="font-semibold">Ishant (You)</span>
-                                    <span class="text-[10px] text-emerald-400 ml-2 bg-emerald-500/10 px-2 py-0.5 rounded-full">Focused</span>
-                                </div>
-                            </div>
-                            <span class="text-slate-400">Set 1 / 2</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- BOTTOM NAVIGATION BAR -->
+    <!-- BOTTOM NAVIGATION BAR (Cleaned: Home, Stats, Settings) -->
     <nav id="bottomNavBar" class="fixed bottom-0 left-0 right-0 z-40 max-w-lg mx-auto p-3 transition-all duration-300">
         <div class="glass-card rounded-2xl p-2 flex items-center justify-around shadow-2xl border border-slate-700/50 light:border-slate-300 backdrop-blur-xl">
             <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-emerald-400 transition-all ripple-effect">
@@ -399,17 +343,13 @@
                 <i class="fa-solid fa-gear text-base"></i>
                 <span class="text-[10px] font-semibold">Settings</span>
             </button>
-            <button onclick="switchTab('invite')" id="nav-btn-invite" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all ripple-effect">
-                <i class="fa-solid fa-user-group text-base"></i>
-                <span class="text-[10px] font-semibold">Invite</span>
-            </button>
         </div>
     </nav>
 
     <!-- FOOTER -->
-    <footer id="mainFooter" class="py-4 text-center text-xs text-slate-400 font-medium tracking-wide">
+    <mainFooter id="mainFooter" class="py-4 text-center text-xs text-slate-400 font-medium tracking-wide">
         made by ❤️ from Ishant
-    </footer>
+    </mainFooter>
 
     <!-- Firebase SDK & Application Script -->
     <script type="module">
@@ -417,20 +357,12 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Firebase handles
         let app, db, auth, currentUser = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'promenthi-study-app-default';
-const firebaseConfig = {
-            apiKey: "AIzaSyCehnv5qgTHaYKPGpaltqH5_QfGcU5dbYY",
-            authDomain: "promenthi.firebaseapp.com",
-            projectId: "promenthi",
-            storageBucket: "promenthi.firebasestorage.app",
-            messagingSenderId: "732312330563",
-            appId: "1:732312330563:web:9055e6a3a2e89a86014ff6"
-        };
-        // Application State
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
         window.appState = {
-            mode: 'pomodoro', // 'pomodoro' or 'custom'
+            mode: 'pomodoro',
             totalTargetHours: 2,
             customFocusMins: 50,
             customBreakMins: 10,
@@ -452,7 +384,6 @@ const firebaseConfig = {
         let audioCtx = null;
         let alarmTimeout = null;
 
-        // Motivational Quotes Database (Non-repeating queue)
         const quotesPool = [
             { text: "The expert in anything was once a beginner. Keep pushing forward.", author: "Helen Hayes" },
             { text: "Successful and effective study is not about how long you study, but how focused you are.", author: "Promenthi Core" },
@@ -464,14 +395,12 @@ const firebaseConfig = {
         ];
         let currentQuoteIndex = 0;
 
-        // Initialize Firebase & App on load
         window.onload = async function() {
             initAudioContext();
             loadNewQuote();
             initCharts();
             setupAuthListener();
             
-            // Check theme
             if (localStorage.getItem('promenthi_theme') === 'light') {
                 toggleTheme();
             }
@@ -486,7 +415,6 @@ const firebaseConfig = {
             }
         }
 
-        // Play 10-second crisp beep-beep alarm
         window.playAlarm = function() {
             if (!audioCtx || window.appState.volume <= 0) return;
             if (audioCtx.state === 'suspended') {
@@ -494,7 +422,7 @@ const firebaseConfig = {
             }
 
             let beepCount = 0;
-            const maxBeeps = 20; // 20 beeps over 10 seconds (every 0.5s)
+            const maxBeeps = 20;
             
             function playBeep() {
                 if (beepCount >= maxBeeps || !window.appState.volume) return;
@@ -502,7 +430,7 @@ const firebaseConfig = {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
                     gain.gain.setValueAtTime(0.3 * window.appState.volume, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
                     
@@ -523,7 +451,6 @@ const firebaseConfig = {
             if (alarmTimeout) clearTimeout(alarmTimeout);
         };
 
-        // Quote rotation
         window.loadNewQuote = function() {
             const q = quotesPool[currentQuoteIndex];
             document.getElementById('motivationalQuoteText').innerText = `"${q.text}"`;
@@ -531,9 +458,8 @@ const firebaseConfig = {
             currentQuoteIndex = (currentQuoteIndex + 1) % quotesPool.length;
         };
 
-        // Navigation Tabs Switching
         window.switchTab = function(tabName) {
-            ['home', 'stats', 'settings', 'invite'].forEach(t => {
+            ['home', 'stats', 'settings'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
                 document.getElementById(`nav-btn-${t}`).classList.remove('text-emerald-400');
                 document.getElementById(`nav-btn-${t}`).classList.add('text-slate-400');
@@ -543,7 +469,6 @@ const firebaseConfig = {
             document.getElementById(`nav-btn-${tabName}`).classList.remove('text-slate-400');
         };
 
-        // Theme Toggle
         window.toggleTheme = function() {
             const html = document.documentElement;
             const icon = document.getElementById('themeIcon');
@@ -562,7 +487,6 @@ const firebaseConfig = {
             }
         };
 
-        // Timer Mode & Setup
         window.setTimerMode = function(mode) {
             if (window.appState.isRunning) {
                 showToast("Please pause or reset timer before changing mode.", "warning");
@@ -590,7 +514,6 @@ const firebaseConfig = {
         window.updateTotalTarget = function() {
             const hours = parseInt(document.getElementById('totalTargetHours').value);
             window.appState.totalTargetHours = hours;
-            // Calculate total sets based on focus duration
             const focusDuration = window.appState.customFocusMins;
             const totalMins = hours * 60;
             window.appState.totalSets = Math.max(1, Math.round(totalMins / (focusDuration + window.appState.customBreakMins)));
@@ -637,10 +560,8 @@ const firebaseConfig = {
             document.getElementById('startPauseIcon').className = "fa-solid fa-pause";
             document.getElementById('startPauseText').innerText = "Pause Session";
             
-            // Enter Fullscreen Focus Mode (Hide Navbar, Header, Footer)
             enterFullscreenFocusMode();
 
-            // Simulate Notification Blocker if enabled
             if (window.appState.notifBlocker) {
                 showToast("🔕 Distraction Blocker Active: Notifications muted.", "info");
             }
@@ -673,7 +594,6 @@ const firebaseConfig = {
             playAlarm();
 
             if (window.appState.isFocusPhase) {
-                // Focus finished -> Start Break or Next Set
                 if (window.appState.currentSet >= window.appState.totalSets) {
                     showToast("🎉 Congratulations! Total study target completed successfully!", "success");
                     window.appState.totalFocusedHours += (window.appState.customFocusMins / 60) * window.appState.totalSets;
@@ -690,7 +610,6 @@ const firebaseConfig = {
                 document.getElementById('timerStatusBadge').className = "px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-bold uppercase tracking-wider mb-6 flex items-center gap-2";
                 showToast("Focus session completed! Enjoy your well-deserved break.", "success");
             } else {
-                // Break finished -> Next Focus Set
                 window.appState.currentSet++;
                 window.appState.isFocusPhase = true;
                 window.appState.timeLeft = window.appState.customFocusMins * 60;
@@ -703,7 +622,7 @@ const firebaseConfig = {
             document.getElementById('startPauseIcon').className = "fa-solid fa-play";
             document.getElementById('startPauseText').innerText = "Start Focus";
             updateTimerDisplay();
-            startTimer(); // Auto continue next phase
+            startTimer();
         }
 
         function updateTimerDisplay() {
@@ -713,7 +632,6 @@ const firebaseConfig = {
             document.getElementById('timerDisplay').innerText = timeStr;
             document.getElementById('currentSetDisplay').innerText = `Set ${window.appState.currentSet} of ${window.appState.totalSets} (${window.appState.isFocusPhase ? 'Focus' : 'Rest'})`;
 
-            // SVG Circle Progress
             const circle = document.getElementById('timerProgressCircle');
             const radius = 120;
             const circumference = 2 * Math.PI * radius;
@@ -723,7 +641,6 @@ const firebaseConfig = {
             circle.style.strokeDashoffset = dashoffset;
         }
 
-        // Fullscreen Focus Mode (Hides Header, Navbar, Footer, and Config panel)
         function enterFullscreenFocusMode() {
             document.getElementById('mainHeader').classList.add('opacity-0', 'pointer-events-none', '-translate-y-10');
             document.getElementById('bottomNavBar').classList.add('opacity-0', 'pointer-events-none', 'translate-y-10');
@@ -745,7 +662,6 @@ const firebaseConfig = {
             stopAlarm();
         }
 
-        // Settings updates
         window.updateVolume = function() {
             const v = document.getElementById('settingVolume').value;
             window.appState.volume = v / 100;
@@ -757,7 +673,6 @@ const firebaseConfig = {
             showToast("Preferences saved successfully.", "success");
         };
 
-        // Toast Notification Helper
         window.showToast = function(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -775,7 +690,6 @@ const firebaseConfig = {
             }, 3500);
         };
 
-        // Charts Initialization
         function initCharts() {
             const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
             new Chart(weeklyCtx, {
@@ -827,42 +741,6 @@ const firebaseConfig = {
             });
         }
 
-        // Room Invite Copy
-        window.copyRoomCode = function() {
-            const code = document.getElementById('roomCodeDisplay').value;
-            const dummy = document.createElement('textarea');
-            document.body.appendChild(dummy);
-            dummy.value = code;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-            showToast("Room code copied to clipboard!", "success");
-        };
-
-        window.joinRoom = function() {
-            const code = document.getElementById('joinRoomInput').value.trim();
-            if (!code) {
-                showToast("Please enter a valid room code.", "error");
-                return;
-            }
-            showToast(`Successfully joined room: ${code.toUpperCase()}`, "success");
-            const buddiesList = document.getElementById('roomBuddiesList');
-            buddiesList.innerHTML += `
-                <div class="p-3 rounded-xl glass-card flex items-center justify-between text-xs animate-in fade-in">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">F</div>
-                        <div>
-                            <span class="font-semibold">Friend (${code.toUpperCase()})</span>
-                            <span class="text-[10px] text-teal-400 ml-2 bg-teal-500/10 px-2 py-0.5 rounded-full">Synchronized</span>
-                        </div>
-                    </div>
-                    <span class="text-slate-400">Set 1 / 2</span>
-                </div>
-            `;
-            document.getElementById('joinRoomInput').value = '';
-        };
-
-        // Firebase Auth & Firestore Integration
         function setupAuthListener() {
             if (!firebaseConfig) {
                 console.log("Running in offline standalone mode.");
