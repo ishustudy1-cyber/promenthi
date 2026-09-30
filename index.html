@@ -56,7 +56,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col transition-colors duration-300 dark:bg-slate-950 light:bg-slate-50 light:text-slate-900">
 
-    <!-- AUTHENTICATION MODAL (Visible by Default) -->
+    <!-- AUTHENTICATION MODAL -->
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
         <div class="glass-card p-8 rounded-3xl w-full max-w-md shadow-2xl border border-slate-700/50 relative">
             <div class="text-center mb-6">
@@ -131,15 +131,6 @@
                 </div>
             </div>
 
-            <div id="timerConfigPanel" class="glass-card p-6 rounded-3xl shadow-xl space-y-5">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="w-full sm:w-auto flex bg-slate-900/60 light:bg-slate-200 p-1 rounded-2xl border border-slate-700/50">
-                        <button onclick="setTimerMode('pomodoro')" id="modePomodoroBtn" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all bg-emerald-500 text-white shadow-md">Pomodoro (50/10)</button>
-                        <button onclick="setTimerMode('custom')" id="modeCustomBtn" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200">Custom Schedule</button>
-                    </div>
-                </div>
-            </div>
-
             <div id="timerContainerCard" class="glass-card p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center text-center relative border border-emerald-500/30">
                 <div id="timerStatusBadge" class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
                     Focus Session
@@ -192,43 +183,44 @@
         </div>
     </nav>
 
-    <!-- SCRIPT LOGIC -->
+    <!-- FIREBASE LOGIC SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        let auth = null;
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-        window.onload = function() {
-            setupAuth();
-            loadNewQuote();
+        // YAHAN APNI FIREBASE KEYS PASTE KARNI HAIN:
+        const firebaseConfig = {
+            apiKey: "AIzaSyCehnv5qgTHaYKPGpaltqH5_QfGcU5dbYY",
+            authDomain: "promenthi.firebaseapp.com",
+            projectId: "promenthi",
+            storageBucket: "promenthi.firebasestorage.app",
+            messagingSenderId: "732312330563",
+            appId: "1:732312330563:web:9055e6a3a2e89a86014ff6"
         };
 
-        function setupAuth() {
-            if (!firebaseConfig) return;
+        let auth = null;
+
+        window.onload = function() {
             try {
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
+                
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        currentUser = user;
+                        document.getElementById('authModal').classList.add('hidden');
                         document.getElementById('userProfileBadge').classList.remove('hidden');
                         document.getElementById('userProfileBadge').classList.add('flex');
-                        document.getElementById('userEmailDisplay').innerText = user.email || `Guest (${user.uid.substring(0,6)})`;
-                        document.getElementById('authModal').classList.add('hidden');
+                        document.getElementById('userEmailDisplay').innerText = user.email;
+                    } else {
+                        document.getElementById('authModal').classList.remove('hidden');
                     }
                 });
-            } catch(e) {}
-        }
+            } catch(e) {
+                console.error("Firebase initialization error:", e);
+            }
 
-        window.handleAnonymousLogin = function() {
-            document.getElementById('authModal').classList.add('hidden');
-            showToast("Logged in as Guest successfully.", "success");
-        };
-
-        window.openAuthModalManually = function() {
-            document.getElementById('authModal').classList.remove('hidden');
+            loadNewQuote();
+            initChart();
         };
 
         document.getElementById('authForm').addEventListener('submit', async (e) => {
@@ -239,12 +231,13 @@
             errBox.classList.add('hidden');
 
             if (!auth) {
-                document.getElementById('authModal').classList.add('hidden');
-                showToast("Logged in successfully (Offline).", "success");
+                errBox.innerText = "Firebase not initialized properly. Please check your keys.";
+                errBox.classList.remove('hidden');
                 return;
             }
 
             try {
+                // Pehle login try karega, agar account nahi hai toh create kar dega
                 try {
                     await signInWithEmailAndPassword(auth, email, pass);
                 } catch(err) {
@@ -257,6 +250,15 @@
                 errBox.classList.remove('hidden');
             }
         });
+
+        window.handleAnonymousLogin = function() {
+            document.getElementById('authModal').classList.add('hidden');
+            showToast("Logged in as Guest.", "success");
+        };
+
+        window.openAuthModalManually = function() {
+            document.getElementById('authModal').classList.remove('hidden');
+        };
 
         window.logoutUser = async function() {
             if (auth) await signOut(auth);
@@ -286,19 +288,86 @@
         };
 
         window.loadNewQuote = function() {
-            document.getElementById('motivationalQuoteText').innerText = `"Effective study is not about hours, but focus."`;
+            const quotes = [
+                { text: "Effective study is not about hours, but focus.", author: "Promenthi Wisdom" },
+                { text: "Small daily improvements over time lead to stunning results.", author: "Robin Sharma" },
+                { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" }
+            ];
+            const q = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('motivationalQuoteText').innerText = `"${q.text}"`;
+            document.getElementById('motivationalQuoteAuthor').innerText = `— ${q.author}`;
         };
-        
-        let timerRunning = false, timeLeft = 3000;
+
+        // Timer Logic
+        let timerRunning = false, timeLeft = 3000, timerInterval = null;
         window.toggleTimer = function() {
             timerRunning = !timerRunning;
             document.getElementById('startPauseText').innerText = timerRunning ? "Pause" : "Start Focus";
+            if (timerRunning) {
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        let m = Math.floor(timeLeft / 60);
+                        let s = timeLeft % 60;
+                        document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    } else {
+                        clearInterval(timerInterval);
+                        timerRunning = false;
+                        document.getElementById('startPauseText').innerText = "Start Focus";
+                        showToast("Focus session completed!", "success");
+                    }
+                }, 1000);
+            } else {
+                clearInterval(timerInterval);
+            }
         };
+
         window.resetTimer = function() {
             timerRunning = false;
+            clearInterval(timerInterval);
+            timeLeft = 3000;
+            document.getElementById('timerDisplay').innerText = "50:00";
             document.getElementById('startPauseText').innerText = "Start Focus";
         };
-        window.setTimerMode = function() {};
+
+        function initChart() {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Focus Hours',
+                        data: [3.5, 4.0, 5.2, 4.5, 6.0, 2.0, 3.0],
+                        backgroundColor: '#22c55e',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = "fa-solid fa-sun text-sm";
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = "fa-solid fa-moon text-sm";
+            }
+        };
     </script>
 </body>
 </html>
