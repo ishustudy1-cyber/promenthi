@@ -1,387 +1,553 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Promenthi - The one app for useful and effective study</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
-                            900: '#14532d',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for Stats -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .light .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            user-select: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d18">
+  <title>Promenthi — Study with intention</title>
+  <meta name="description" content="Promenthi helps you focus, build consistency and make every study session count.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080d18; --panel: rgba(16,25,43,.78); --panel-solid:#10192b;
+      --text:#f3f7ff; --muted:#94a3b8; --line:rgba(148,163,184,.15);
+      --green:#65e6ad; --mint:#a5f3d0; --cyan:#65d9e8; --shadow:0 24px 80px rgba(0,0,0,.28);
+    }
+    html.light {
+      color-scheme:light;
+      --bg:#f4f8f7; --panel:rgba(255,255,255,.82); --panel-solid:#fff;
+      --text:#10231f; --muted:#64748b; --line:rgba(15,23,42,.10);
+      --green:#0b9b70; --mint:#087d60; --cyan:#168fa1; --shadow:0 24px 70px rgba(21,54,46,.10);
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:100px; }
+    body { margin:0; font-family:'DM Sans',sans-serif; color:var(--text); background:var(--bg); overflow-x:hidden; }
+    h1,h2,h3,.brand-font { font-family:'Manrope',sans-serif; }
+    ::selection { background:rgba(101,230,173,.28); }
+    .ambient { position:fixed; inset:0; pointer-events:none; z-index:-1; overflow:hidden; }
+    .ambient:before,.ambient:after { content:""; position:absolute; width:44rem; height:44rem; border-radius:50%; filter:blur(110px); opacity:.14; animation:floatGlow 18s ease-in-out infinite alternate; }
+    .ambient:before { background:#0bbf83; top:-24rem; left:-13rem; }
+    .ambient:after { background:#168fa1; right:-22rem; top:28%; animation-delay:-8s; }
+    html.light .ambient:before,html.light .ambient:after { opacity:.10; }
+    @keyframes floatGlow { from{transform:translate3d(0,0,0) scale(1)} to{transform:translate3d(65px,55px,0) scale(1.18)} }
+    .glass { background:var(--panel); border:1px solid var(--line); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:var(--shadow); }
+    .muted { color:var(--muted); }
+    .gradient-text { background:linear-gradient(100deg,#b5f7d8 0%,#65e6ad 42%,#65d9e8 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .btn-primary { background:linear-gradient(110deg,#35c98d,#149b91); color:#041710; box-shadow:0 12px 35px rgba(42,201,141,.2); transition:transform .25s,box-shadow .25s,filter .25s; }
+    .btn-primary:hover { transform:translateY(-3px); box-shadow:0 18px 42px rgba(42,201,141,.3); filter:saturate(1.15); }
+    .btn-quiet { border:1px solid var(--line); background:rgba(148,163,184,.07); transition:all .25s; }
+    .btn-quiet:hover { border-color:rgba(101,230,173,.45); color:var(--green); transform:translateY(-2px); }
+    .nav-link { color:var(--muted); transition:color .2s; }
+    .nav-link:hover,.nav-link.active { color:var(--green); }
+    .feature-card { transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,background .3s; }
+    .feature-card:hover { transform:translateY(-7px); border-color:rgba(101,230,173,.38); background:rgba(101,230,173,.06); }
+    .icon-tile { background:linear-gradient(145deg,rgba(101,230,173,.18),rgba(101,217,232,.08)); border:1px solid rgba(101,230,173,.2); color:var(--green); }
+    .reveal { opacity:0; transform:translateY(28px) scale(.985); filter:blur(5px); transition:opacity .75s ease,transform .75s cubic-bezier(.2,.7,.2,1),filter .75s ease; }
+    .reveal.is-visible { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+    .reveal-delay-1 { transition-delay:.08s; } .reveal-delay-2 { transition-delay:.16s; } .reveal-delay-3 { transition-delay:.24s; }
+    .hero-grid { background-image:linear-gradient(rgba(148,163,184,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.045) 1px,transparent 1px); background-size:48px 48px; mask-image:linear-gradient(to bottom,black,transparent 88%); }
+    .timer-ring { transform:rotate(-90deg); }
+    .timer-ring circle { fill:none; stroke-width:8; }
+    .timer-track { stroke:rgba(148,163,184,.13); }
+    .timer-progress { stroke:url(#timerGradient); stroke-linecap:round; transition:stroke-dashoffset .5s linear; }
+    .pulse-dot { animation:pulseDot 2s infinite; }
+    @keyframes pulseDot { 0%,100%{box-shadow:0 0 0 0 rgba(101,230,173,.38)} 50%{box-shadow:0 0 0 8px rgba(101,230,173,0)} }
+    .float-card { animation:floatCard 7s ease-in-out infinite; }
+    @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+    .scroll-progress { position:fixed; top:0; left:0; height:3px; width:0; z-index:100; background:linear-gradient(90deg,#35c98d,#65d9e8); box-shadow:0 0 12px rgba(101,230,173,.5); }
+    .toast { animation:toastIn .3s ease both; }
+    @keyframes toastIn { from{opacity:0;transform:translateY(-10px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .modal-backdrop { background:rgba(2,6,15,.78); backdrop-filter:blur(16px); }
+    input { color:var(--text); }
+    .field { background:rgba(148,163,184,.07); border:1px solid var(--line); outline:none; }
+    .field:focus { border-color:rgba(101,230,173,.65); box-shadow:0 0 0 3px rgba(101,230,173,.10); }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+      .reveal { opacity:1; transform:none; filter:none; }
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col transition-colors duration-300 dark:bg-slate-950 light:bg-slate-50 light:text-slate-900">
+<body>
+  <div class="ambient"><div class="hero-grid absolute inset-0"></div></div>
+  <div id="scrollProgress" class="scroll-progress"></div>
 
-    <!-- AUTHENTICATION MODAL -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-        <div class="glass-card p-8 rounded-3xl w-full max-w-md shadow-2xl border border-slate-700/50 relative">
-            <div class="text-center mb-6">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-lg shadow-emerald-500/30 mb-3">
-                    <i class="fa-solid fa-graduation-cap text-3xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold tracking-tight">Welcome to Promenthi</h2>
-                <p class="text-xs text-slate-400 mt-1">The one app for useful and effective study</p>
-            </div>
-            
-            <div id="authError" class="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs rounded-xl hidden"></div>
-
-            <form id="authForm" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
-                    <input type="email" id="authEmail" required class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
-                    <input type="password" id="authPassword" required class="w-full px-4 py-3 rounded-xl bg-slate-900/50 border border-slate-700 focus:border-emerald-500 focus:outline-none text-sm transition">
-                </div>
-                <button type="submit" id="authSubmitBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl transition shadow-lg">
-                    Login / Sign Up
-                </button>
-            </form>
-            <div class="mt-4 text-center">
-                <button type="button" onclick="handleAnonymousLogin()" class="text-xs text-emerald-400 hover:underline font-medium">Continue as Guest (Quick Demo)</button>
-            </div>
-        </div>
+  <!-- Sign-in -->
+  <div id="authModal" class="modal-backdrop fixed inset-0 z-[90] flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md rounded-[2rem] p-7 sm:p-9 relative overflow-hidden">
+      <div class="absolute -right-16 -top-20 w-48 h-48 rounded-full bg-emerald-400/10 blur-3xl"></div>
+      <div class="relative text-center">
+        <div class="mx-auto mb-5 w-14 h-14 rounded-2xl icon-tile flex items-center justify-center text-2xl"><i class="fa-solid fa-book-open"></i></div>
+        <p class="text-xs uppercase tracking-[.24em] muted font-bold mb-2">Your study space</p>
+        <h2 class="text-3xl font-extrabold brand-font">Welcome to <span class="gradient-text">Promenthi</span></h2>
+        <p class="muted text-sm mt-2">A calmer way to focus, learn and grow.</p>
+      </div>
+      <div id="authError" class="hidden mt-5 rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-300"></div>
+      <form id="authForm" class="relative mt-7 space-y-3">
+        <label class="block text-xs font-semibold muted">EMAIL ADDRESS</label>
+        <input type="email" id="authEmail" required autocomplete="email" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="you@example.com">
+        <label class="block text-xs font-semibold muted pt-2">PASSWORD</label>
+        <input type="password" id="authPassword" required autocomplete="current-password" minlength="6" class="field w-full rounded-xl px-4 py-3 text-sm" placeholder="At least 6 characters">
+        <button type="submit" id="authSubmitBtn" class="btn-primary w-full rounded-xl py-3.5 font-bold mt-3">Continue <i class="fa-solid fa-arrow-right ml-2"></i></button>
+      </form>
+      <button type="button" onclick="handleAnonymousLogin()" class="w-full mt-4 py-3 rounded-xl btn-quiet text-sm font-semibold">Explore as a guest</button>
+      <p class="text-[11px] muted text-center mt-5">Your progress stays on this device during this demo.</p>
     </div>
+  </div>
 
-    <!-- TOAST CONTAINER -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toastContainer" class="fixed top-5 right-5 z-[95] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- TOP HEADER -->
-    <header id="mainHeader" class="w-full px-6 py-4 flex items-center justify-between border-b border-slate-800/60 dark:border-slate-800/60 light:border-slate-200 transition-all duration-300">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                <i class="fa-solid fa-book-bookmark text-lg"></i>
-            </div>
-            <div>
-                <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Promenthi</h1>
-                <p class="text-[10px] text-slate-400 tracking-wide font-medium">Useful & Effective Study</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-emerald-400 transition-all" title="Toggle Theme">
-                <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
-            </button>
-            <div id="userProfileBadge" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl glass-card text-xs">
-                <i class="fa-solid fa-user-check text-emerald-400"></i>
-                <span id="userEmailDisplay" class="truncate max-w-[120px] font-medium"></span>
-                <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-400 ml-2" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
-            </div>
-        </div>
-    </header>
-
-    <!-- ADS SECTION -->
-    <div class="flex justify-center py-4 px-4">
-        <script>
-          atOptions = {
-            'key' : '5db27263c8ebcc7e8b9830042cf7b89b',
-            'format' : 'iframe',
-            'height' : 90,
-            'width' : 728,
-            'params' : {}
-          };
-        </script>
-        <script src="https://www.highrevenueformat.com/5db27263c8ebcc7e8b9830042cf7b89b/invoke.js"></script>
+  <!-- Header -->
+  <header id="mainHeader" class="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--bg)]/70 backdrop-blur-2xl">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 h-[76px] flex items-center justify-between">
+      <a href="#home" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl icon-tile flex items-center justify-center group-hover:rotate-[-8deg] transition-transform"><i class="fa-solid fa-book-bookmark"></i></div>
+        <div><div class="font-extrabold tracking-tight text-lg brand-font">Promenthi<span class="text-emerald-400">.</span></div><div class="text-[10px] muted tracking-[.13em] uppercase">Useful & effective study</div></div>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold">
+        <a class="nav-link active" href="#home">Overview</a>
+        <a class="nav-link" href="#focus">Focus room</a>
+        <a class="nav-link" href="#insights">Insights</a>
+        <a class="nav-link" href="#method">Your method</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <div id="userProfileBadge" class="hidden items-center gap-2 text-xs muted mr-2"><i class="fa-solid fa-circle-user text-emerald-400"></i><span id="userEmailDisplay" class="max-w-[110px] truncate"></span><button onclick="logoutUser()" title="Log out" class="hover:text-rose-400 ml-1"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
+        <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl btn-quiet" title="Toggle theme"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+        <a href="#focus" class="hidden sm:inline-flex btn-primary rounded-xl px-4 py-2.5 text-xs font-extrabold">Start studying <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i></a>
+      </div>
     </div>
+  </header>
 
-    <!-- MAIN CONTAINER -->
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-28">
-        <!-- HOME TAB -->
-        <section id="tab-home" class="space-y-6">
-            <div class="glass-card p-5 rounded-2xl relative overflow-hidden shadow-sm border border-emerald-500/20">
-                <div class="flex items-start gap-3">
-                    <div class="text-emerald-400 mt-0.5"><i class="fa-solid fa-quote-left text-lg"></i></div>
-                    <div class="flex-1">
-                        <p id="motivationalQuoteText" class="text-sm font-medium italic text-slate-200 light:text-slate-800">"Loading motivation..."</p>
-                        <p id="motivationalQuoteAuthor" class="text-[11px] text-emerald-400 font-semibold mt-1">— Promenthi Wisdom</p>
-                    </div>
-                    <button onclick="loadNewQuote()" class="text-slate-400 hover:text-emerald-400 transition-colors p-1" title="New Quote">
-                        <i class="fa-solid fa-rotate text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div id="timerContainerCard" class="glass-card p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center text-center relative border border-emerald-500/30">
-                <div id="timerStatusBadge" class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
-                    Focus Session
-                </div>
-                <div class="relative flex items-center justify-center my-4">
-                    <span id="timerDisplay" class="text-6xl md:text-7xl font-extrabold tracking-tighter">50:00</span>
-                </div>
-                <div class="flex items-center gap-4 mt-8">
-                    <button id="startPauseBtn" onclick="toggleTimer()" class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-2xl shadow-xl">
-                        <span id="startPauseText">Start Focus</span>
-                    </button>
-                    <button onclick="resetTimer()" class="w-14 h-14 rounded-2xl glass-card flex items-center justify-center text-slate-300">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- STATS TAB -->
-        <section id="tab-stats" class="space-y-6 hidden">
-            <div class="glass-card p-6 rounded-3xl">
-                <h2 class="text-lg font-bold mb-4">Your Study Analytics</h2>
-                <div class="h-56"><canvas id="weeklyChart"></canvas></div>
-            </div>
-        </section>
-
-        <!-- SETTINGS TAB -->
-        <section id="tab-settings" class="space-y-6 hidden">
-            <div class="glass-card p-6 rounded-3xl space-y-4">
-                <h2 class="text-lg font-bold">Preferences</h2>
-                <button onclick="openAuthModalManually()" class="px-4 py-2 bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30">
-                    Open Sign-In / Account Modal
-                </button>
-            </div>
-        </section>
-    </main>
-
-    <!-- BOTTOM NAV -->
-    <nav id="bottomNavBar" class="fixed bottom-0 left-0 right-0 z-40 max-w-lg mx-auto p-3">
-        <div class="glass-card rounded-2xl p-2 flex items-center justify-around shadow-2xl border border-slate-700/50">
-            <button onclick="switchTab('home')" id="nav-btn-home" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-emerald-400">
-                <i class="fa-solid fa-house"></i><span class="text-[10px]">Home</span>
-            </button>
-            <button onclick="switchTab('stats')" id="nav-btn-stats" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-slate-400">
-                <i class="fa-solid fa-chart-pie"></i><span class="text-[10px]">Stats</span>
-            </button>
-            <button onclick="switchTab('settings')" id="nav-btn-settings" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-slate-400">
-                <i class="fa-solid fa-gear"></i><span class="text-[10px]">Settings</span>
-            </button>
+  <main class="relative">
+    <!-- Hero -->
+    <section id="home" class="max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-16">
+      <div class="grid lg:grid-cols-[1.05fr_.95fr] gap-12 items-center">
+        <div class="reveal">
+          <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[.07] px-3 py-1.5 text-[11px] font-bold tracking-wide text-emerald-300 mb-7">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span> YOUR PERSONAL STUDY COMPANION
+          </div>
+          <h1 class="text-[clamp(3rem,7vw,5.8rem)] leading-[.99] tracking-[-.065em] font-extrabold brand-font max-w-3xl">Make every<br><span class="gradient-text">study session</span><br>count.</h1>
+          <p class="muted text-base sm:text-lg leading-relaxed max-w-xl mt-7">Less distraction. More intention. Build a study routine that feels focused, balanced and completely yours.</p>
+          <div class="flex flex-wrap gap-3 mt-8">
+            <a href="#focus" class="btn-primary rounded-xl px-6 py-3.5 text-sm font-extrabold">Enter focus room <i class="fa-solid fa-arrow-right ml-2"></i></a>
+            <a href="#insights" class="btn-quiet rounded-xl px-6 py-3.5 text-sm font-bold">Explore your progress</a>
+          </div>
+          <div class="flex flex-wrap gap-7 mt-10 pt-7 border-t border-[var(--line)]">
+            <div><div class="text-2xl font-extrabold brand-font">50<span class="text-emerald-400">/</span>05</div><div class="text-xs muted mt-1">Focus / break rhythm</div></div>
+            <div><div class="text-2xl font-extrabold brand-font">1<span class="text-emerald-400">%</span></div><div class="text-xs muted mt-1">Better every session</div></div>
+            <div><div class="text-2xl font-extrabold brand-font">You<span class="text-emerald-400">.</span></div><div class="text-xs muted mt-1">Your pace, your progress</div></div>
+          </div>
         </div>
-    </nav>
+        <div class="relative reveal reveal-delay-2">
+          <div class="absolute inset-8 rounded-full bg-emerald-400/10 blur-3xl"></div>
+          <div class="glass rounded-[2rem] p-5 sm:p-7 relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-56 h-56 rounded-full border border-emerald-300/10"></div>
+            <div class="flex justify-between items-center mb-7 relative">
+              <div><p class="text-xs muted font-semibold uppercase tracking-[.18em]">Today’s intention</p><h3 class="text-xl font-extrabold mt-1">Show up for yourself.</h3></div>
+              <div class="w-10 h-10 rounded-xl icon-tile flex items-center justify-center"><i class="fa-solid fa-sparkles"></i></div>
+            </div>
+            <div class="rounded-2xl border border-[var(--line)] bg-black/[.08] p-5">
+              <div class="flex items-center justify-between text-xs muted mb-4"><span>YOUR FOCUS FLOW</span><span class="text-emerald-400 font-bold">READY WHEN YOU ARE</span></div>
+              <div class="flex items-end gap-2 h-28">
+                <div class="flex-1 rounded-t-lg bg-emerald-300/20 h-[35%]"></div><div class="flex-1 rounded-t-lg bg-emerald-300/30 h-[55%]"></div><div class="flex-1 rounded-t-lg bg-emerald-300/40 h-[43%]"></div><div class="flex-1 rounded-t-lg bg-emerald-300/50 h-[75%]"></div><div class="flex-1 rounded-t-lg bg-emerald-300/70 h-[60%]"></div><div class="flex-1 rounded-t-lg bg-gradient-to-t from-emerald-500 to-cyan-300 h-[92%]"></div><div class="flex-1 rounded-t-lg bg-emerald-300/20 h-[48%]"></div>
+              </div>
+              <div class="flex justify-between text-[10px] muted mt-3"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-3">
+              <div class="rounded-2xl p-4 bg-emerald-400/[.08] border border-emerald-400/15"><i class="fa-solid fa-bullseye text-emerald-400"></i><div class="text-lg font-extrabold mt-2">One task</div><div class="text-[11px] muted">Give it your attention</div></div>
+              <div class="rounded-2xl p-4 bg-cyan-400/[.06] border border-cyan-400/15"><i class="fa-solid fa-mug-hot text-cyan-300"></i><div class="text-lg font-extrabold mt-2">Take breaks</div><div class="text-[11px] muted">Rest is part of progress</div></div>
+            </div>
+          </div>
+          <div class="float-card absolute -left-5 sm:-left-9 bottom-10 glass rounded-2xl px-4 py-3 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-400/15 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-leaf"></i></div><div><div class="text-xs font-extrabold">A little progress</div><div class="text-[10px] muted">is still progress.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- FIREBASE LOGIC SCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    <!-- Focus room -->
+    <section id="focus" class="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9 reveal">
+        <div><p class="text-xs uppercase tracking-[.22em] text-emerald-400 font-extrabold mb-3">01 / Focus room</p><h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Find your <span class="gradient-text">flow state.</span></h2><p class="muted mt-3 max-w-xl">Settle in, choose one thing to work on, and let the timer protect your attention.</p></div>
+        <div class="text-xs muted flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> A quiet space to do your best work</div>
+      </div>
+      <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-5">
+        <div class="glass rounded-[2rem] p-6 sm:p-9 relative overflow-hidden reveal">
+          <div class="absolute -right-24 -bottom-32 w-80 h-80 rounded-full bg-emerald-400/[.07] blur-3xl"></div>
+          <div class="flex items-center justify-between relative">
+            <div><p class="text-xs uppercase tracking-[.18em] muted font-bold">Current session</p><div id="timerStatusBadge" class="inline-flex items-center gap-2 mt-2 text-sm font-bold text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span id="phaseLabel">Focus session</span></div></div>
+            <button onclick="skipPhase()" class="btn-quiet rounded-xl px-3 py-2 text-xs font-bold">Skip phase <i class="fa-solid fa-forward-step ml-1"></i></button>
+          </div>
+          <div class="relative flex items-center justify-center py-8 sm:py-10">
+            <svg class="timer-ring w-64 h-64 sm:w-72 sm:h-72" viewBox="0 0 240 240" aria-hidden="true">
+              <defs><linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#65e6ad"/><stop offset="100%" stop-color="#65d9e8"/></linearGradient></defs>
+              <circle class="timer-track" cx="120" cy="120" r="104"></circle>
+              <circle id="timerProgress" class="timer-progress" cx="120" cy="120" r="104" stroke-dasharray="653.45" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="absolute text-center">
+              <div id="timerDisplay" class="text-6xl sm:text-7xl font-extrabold tracking-[-.07em] brand-font tabular-nums">50:00</div>
+              <div id="timerSubtext" class="text-xs muted mt-3 tracking-[.2em] uppercase font-bold">Ready to focus</div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-3 relative">
+            <button id="startPauseBtn" onclick="toggleTimer()" class="btn-primary min-w-44 rounded-xl px-7 py-4 font-extrabold"><i class="fa-solid fa-play mr-2"></i><span id="startPauseText">Start focus</span></button>
+            <button onclick="resetTimer()" class="btn-quiet w-14 h-14 rounded-xl" title="Reset timer"><i class="fa-solid fa-rotate-right"></i></button>
+          </div>
+          <p class="text-center text-[11px] muted mt-5">50 minutes of focus · 5 minutes to recharge</p>
+        </div>
+        <div class="flex flex-col gap-5">
+          <div class="glass rounded-[2rem] p-6 sm:p-7 flex-1 reveal reveal-delay-1">
+            <div class="flex items-center justify-between mb-5"><p class="text-xs uppercase tracking-[.18em] muted font-bold">A thought to carry</p><button onclick="loadNewQuote()" class="w-9 h-9 rounded-xl btn-quiet" title="New quote"><i class="fa-solid fa-shuffle text-xs"></i></button></div>
+            <i class="fa-solid fa-quote-left text-2xl text-emerald-400/70"></i>
+            <p id="motivationalQuoteText" class="text-xl sm:text-2xl font-bold leading-snug tracking-tight mt-4">Loading a little motivation...</p>
+            <p id="motivationalQuoteAuthor" class="text-xs text-emerald-400 font-bold mt-5">— Promenthi</p>
+            <div class="mt-7 pt-5 border-t border-[var(--line)] flex items-center gap-3"><div class="w-9 h-9 rounded-full icon-tile flex items-center justify-center"><i class="fa-solid fa-lightbulb"></i></div><p class="text-xs muted leading-relaxed">You don’t need a perfect day. You just need to begin.</p></div>
+          </div>
+          <div class="glass rounded-[2rem] p-6 reveal reveal-delay-2">
+            <p class="text-xs uppercase tracking-[.18em] muted font-bold mb-4">Your focus checklist</p>
+            <div class="space-y-3">
+              <label class="flex items-center gap-3 text-sm"><input type="checkbox" class="accent-emerald-400 w-4 h-4"> Clear your study space</label>
+              <label class="flex items-center gap-3 text-sm"><input type="checkbox" class="accent-emerald-400 w-4 h-4"> Keep only one task open</label>
+              <label class="flex items-center gap-3 text-sm"><input type="checkbox" class="accent-emerald-400 w-4 h-4"> Silence distractions</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        // YAHAN APNI FIREBASE KEYS PASTE KARNI HAIN:
-        const firebaseConfig = {
-            apiKey: "AIzaSyCehnv5qgTHaYKPGpaltqH5_QfGcU5dbYY",
-            authDomain: "promenthi.firebaseapp.com",
-            projectId: "promenthi",
-            storageBucket: "promenthi.firebasestorage.app",
-            messagingSenderId: "732312330563",
-            appId: "1:732312330563:web:9055e6a3a2e89a86014ff6"
-        };
+    <!-- Feature band -->
+    <section id="method" class="border-y border-[var(--line)] bg-[var(--panel)]/35">
+      <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+        <div class="max-w-2xl mb-10 reveal"><p class="text-xs uppercase tracking-[.22em] text-emerald-400 font-extrabold mb-3">02 / A better rhythm</p><h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Study smarter. <span class="gradient-text">Feel better.</span></h2><p class="muted mt-3">Good study habits are built through small, repeatable actions — not pressure.</p></div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <article class="glass feature-card rounded-3xl p-6 reveal"><div class="w-12 h-12 rounded-2xl icon-tile flex items-center justify-center text-lg mb-6"><i class="fa-solid fa-crosshairs"></i></div><h3 class="text-lg font-extrabold">Deep focus</h3><p class="muted text-sm leading-relaxed mt-2">Give one meaningful task your full attention. Let the timer create a clear beginning and end.</p><div class="mt-6 text-xs text-emerald-400 font-bold">01 — BE PRESENT</div></article>
+          <article class="glass feature-card rounded-3xl p-6 reveal reveal-delay-1"><div class="w-12 h-12 rounded-2xl icon-tile flex items-center justify-center text-lg mb-6"><i class="fa-solid fa-battery-three-quarters"></i></div><h3 class="text-lg font-extrabold">Intentional breaks</h3><p class="muted text-sm leading-relaxed mt-2">Step away, stretch, hydrate and return with a little more energy. Rest belongs in the plan.</p><div class="mt-6 text-xs text-emerald-400 font-bold">02 — RECHARGE</div></article>
+          <article class="glass feature-card rounded-3xl p-6 reveal reveal-delay-2"><div class="w-12 h-12 rounded-2xl icon-tile flex items-center justify-center text-lg mb-6"><i class="fa-solid fa-chart-line"></i></div><h3 class="text-lg font-extrabold">Visible progress</h3><p class="muted text-sm leading-relaxed mt-2">Notice the effort you put in. Consistency becomes easier when you can see it adding up.</p><div class="mt-6 text-xs text-emerald-400 font-bold">03 — KEEP GROWING</div></article>
+        </div>
+      </div>
+    </section>
 
-        let auth = null;
+    <!-- Insights -->
+    <section id="insights" class="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9 reveal">
+        <div><p class="text-xs uppercase tracking-[.22em] text-emerald-400 font-extrabold mb-3">03 / Your insights</p><h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Progress, <span class="gradient-text">in perspective.</span></h2><p class="muted mt-3">A snapshot of your study rhythm. Keep showing up and your story will grow.</p></div>
+        <div class="text-xs muted">Weekly overview · Demo data</div>
+      </div>
+      <div class="grid lg:grid-cols-[1.35fr_.65fr] gap-5">
+        <div class="glass rounded-[2rem] p-6 sm:p-8 reveal">
+          <div class="flex items-center justify-between mb-6"><div><h3 class="font-extrabold text-lg">Weekly focus time</h3><p class="text-xs muted mt-1">Hours spent in focused study</p></div><div class="w-10 h-10 rounded-xl icon-tile flex items-center justify-center"><i class="fa-solid fa-chart-column"></i></div></div>
+          <div class="h-64"><canvas id="weeklyChart"></canvas></div>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-1 gap-5">
+          <div class="glass rounded-[2rem] p-6 reveal reveal-delay-1"><div class="flex justify-between items-center"><span class="text-xs muted font-bold uppercase tracking-[.15em]">Focus goal</span><i class="fa-solid fa-bullseye text-emerald-400"></i></div><div class="text-4xl font-extrabold brand-font mt-5">50 <span class="text-base muted font-semibold">min</span></div><p class="text-xs muted mt-2">One session at a time.</p><div class="h-1.5 rounded-full bg-slate-500/15 mt-5 overflow-hidden"><div class="h-full w-4/5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300"></div></div></div>
+          <div class="glass rounded-[2rem] p-6 reveal reveal-delay-2"><div class="flex justify-between items-center"><span class="text-xs muted font-bold uppercase tracking-[.15em]">Keep it steady</span><i class="fa-solid fa-seedling text-emerald-400"></i></div><div class="text-4xl font-extrabold brand-font mt-5">1 <span class="text-base muted font-semibold">step</span></div><p class="text-xs muted mt-2">Every focused minute is a win.</p><div class="flex gap-1.5 mt-5"><span class="h-2 flex-1 rounded-full bg-emerald-400"></span><span class="h-2 flex-1 rounded-full bg-emerald-400/70"></span><span class="h-2 flex-1 rounded-full bg-emerald-400/40"></span><span class="h-2 flex-1 rounded-full bg-slate-500/15"></span><span class="h-2 flex-1 rounded-full bg-slate-500/15"></span><span class="h-2 flex-1 rounded-full bg-slate-500/15"></span><span class="h-2 flex-1 rounded-full bg-slate-500/15"></span></div></div>
+        </div>
+      </div>
+    </section>
 
-        window.onload = function() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        document.getElementById('authModal').classList.add('hidden');
-                        document.getElementById('userProfileBadge').classList.remove('hidden');
-                        document.getElementById('userProfileBadge').classList.add('flex');
-                        document.getElementById('userEmailDisplay').innerText = user.email;
-                    } else {
-                        document.getElementById('authModal').classList.remove('hidden');
-                    }
-                });
-            } catch(e) {
-                console.error("Firebase initialization error:", e);
-            }
+    <!-- Closing CTA -->
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28">
+      <div class="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] p-8 sm:p-14 glass reveal">
+        <div class="absolute -right-20 -top-32 w-96 h-96 rounded-full bg-emerald-400/10 blur-3xl"></div>
+        <div class="relative max-w-2xl"><p class="text-xs uppercase tracking-[.22em] text-emerald-400 font-extrabold mb-4">Your next chapter starts now</p><h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">Small steps. <span class="gradient-text">Big momentum.</span></h2><p class="muted mt-4 leading-relaxed">You’ve got a goal worth working for. Give it your attention, take your breaks, and keep moving forward.</p><a href="#focus" class="inline-flex btn-primary rounded-xl px-6 py-3.5 text-sm font-extrabold mt-7">Start a focus session <i class="fa-solid fa-arrow-right ml-2"></i></a></div>
+      </div>
+    </section>
+  </main>
 
-            loadNewQuote();
-            initChart();
-        };
+  <footer class="border-t border-[var(--line)]">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-7 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-sm font-extrabold"><i class="fa-solid fa-book-bookmark text-emerald-400"></i> Promenthi<span class="text-emerald-400">.</span></div>
+      <p class="text-xs muted">Make time for what moves you forward.</p>
+      <button onclick="openAuthModalManually()" class="text-xs muted hover:text-emerald-400 transition">Account & sign in</button>
+    </div>
+  </footer>
 
-        document.getElementById('authForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPassword').value;
-            const errBox = document.getElementById('authError');
-            errBox.classList.add('hidden');
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-            if (!auth) {
-                errBox.innerText = "Firebase not initialized properly. Please check your keys.";
-                errBox.classList.remove('hidden');
-                return;
-            }
+    const firebaseConfig = {
+      apiKey: "AIzaSyCehnv5qgTHaYKPGpaltqH5_QfGcU5dbYY",
+      authDomain: "promenthi.firebaseapp.com",
+      projectId: "promenthi",
+      storageBucket: "promenthi.firebasestorage.app",
+      messagingSenderId: "732312330563",
+      appId: "1:732312330563:web:9055e6a3a2e89a86014ff6"
+    };
 
-            try {
-                // Pehle login try karega, agar account nahi hai toh create kar dega
-                try {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } catch(err) {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                }
-                document.getElementById('authModal').classList.add('hidden');
-                showToast("Authentication successful!", "success");
-            } catch(err) {
-                errBox.innerText = err.message;
-                errBox.classList.remove('hidden');
-            }
-        });
-
-        window.handleAnonymousLogin = function() {
-            document.getElementById('authModal').classList.add('hidden');
-            showToast("Logged in as Guest.", "success");
-        };
-
-        window.openAuthModalManually = function() {
-            document.getElementById('authModal').classList.remove('hidden');
-        };
-
-        window.logoutUser = async function() {
-            if (auth) await signOut(auth);
-            document.getElementById('userProfileBadge').classList.add('hidden');
-            document.getElementById('authModal').classList.remove('hidden');
-            showToast("Logged out successfully.", "info");
-        };
-
-        window.showToast = function(msg, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `glass-card px-4 py-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-semibold shadow-xl flex items-center gap-3`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
-        };
-
-        window.switchTab = function(tabName) {
-            ['home', 'stats', 'settings'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav-btn-${t}`).classList.remove('text-emerald-400');
-                document.getElementById(`nav-btn-${t}`).classList.add('text-slate-400');
-            });
-            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-            document.getElementById(`nav-btn-${tabName}`).classList.add('text-emerald-400');
-            document.getElementById(`nav-btn-${tabName}`).classList.remove('text-slate-400');
-        };
-
-        window.loadNewQuote = function() {
-            const quotes = [
-                { text: "Effective study is not about hours, but focus.", author: "Promenthi Wisdom" },
-                { text: "Small daily improvements over time lead to stunning results.", author: "Robin Sharma" },
-                { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" }
-            ];
-            const q = quotes[Math.floor(Math.random() * quotes.length)];
-            document.getElementById('motivationalQuoteText').innerText = `"${q.text}"`;
-            document.getElementById('motivationalQuoteAuthor').innerText = `— ${q.author}`;
-        };
-
-        // Timer Logic
-        let timerRunning = false, timeLeft = 3000, timerInterval = null;
-        window.toggleTimer = function() {
-            timerRunning = !timerRunning;
-            document.getElementById('startPauseText').innerText = timerRunning ? "Pause" : "Start Focus";
-            if (timerRunning) {
-                timerInterval = setInterval(() => {
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        let m = Math.floor(timeLeft / 60);
-                        let s = timeLeft % 60;
-                        document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                    } else {
-                        clearInterval(timerInterval);
-                        timerRunning = false;
-                        document.getElementById('startPauseText').innerText = "Start Focus";
-                        showToast("Focus session completed!", "success");
-                    }
-                }, 1000);
-            } else {
-                clearInterval(timerInterval);
-            }
-        };
-
-        window.resetTimer = function() {
-            timerRunning = false;
-            clearInterval(timerInterval);
-            timeLeft = 3000;
-            document.getElementById('timerDisplay').innerText = "50:00";
-            document.getElementById('startPauseText').innerText = "Start Focus";
-        };
-
-        function initChart() {
-            const ctx = document.getElementById('weeklyChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Focus Hours',
-                        data: [3.5, 4.0, 5.2, 4.5, 6.0, 2.0, 3.0],
-                        backgroundColor: '#22c55e',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                    }
-                }
-            });
+    let auth = null;
+    try {
+      const app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          document.getElementById('authModal').classList.add('hidden');
+          document.getElementById('userProfileBadge').classList.remove('hidden');
+          document.getElementById('userProfileBadge').classList.add('flex');
+          document.getElementById('userEmailDisplay').textContent = user.email || 'Signed in';
+        } else if (!sessionStorage.getItem('promenthiGuest')) {
+          document.getElementById('authModal').classList.remove('hidden');
         }
+      });
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+      document.getElementById('authError').textContent = 'Sign-in is unavailable right now. You can still explore as a guest.';
+      document.getElementById('authError').classList.remove('hidden');
+    }
 
-        window.toggleTheme = function() {
-            const html = document.documentElement;
-            const icon = document.getElementById('themeIcon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                html.classList.add('light');
-                icon.className = "fa-solid fa-sun text-sm";
-            } else {
-                html.classList.remove('light');
-                html.classList.add('dark');
-                icon.className = "fa-solid fa-moon text-sm";
-            }
-        };
-    </script>
+    document.getElementById('authForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errorBox = document.getElementById('authError');
+      const submit = document.getElementById('authSubmitBtn');
+      errorBox.classList.add('hidden');
+      if (!auth) {
+        errorBox.textContent = 'Firebase could not be initialized. Please try guest mode.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+      submit.disabled = true;
+      submit.textContent = 'Please wait...';
+      try {
+        try { await signInWithEmailAndPassword(auth, email, password); }
+        catch (loginError) {
+          if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/invalid-credential') {
+            await createUserWithEmailAndPassword(auth, email, password);
+          } else { throw loginError; }
+        }
+        sessionStorage.removeItem('promenthiGuest');
+        document.getElementById('authModal').classList.add('hidden');
+        showToast('You are signed in. Let’s make this session count!', 'success');
+      } catch (error) {
+        errorBox.textContent = error.message || 'Unable to sign in. Please try again.';
+        errorBox.classList.remove('hidden');
+      } finally {
+        submit.disabled = false;
+        submit.innerHTML = 'Continue <i class="fa-solid fa-arrow-right ml-2"></i>';
+      }
+    });
+
+    window.handleAnonymousLogin = () => {
+      sessionStorage.setItem('promenthiGuest', '1');
+      document.getElementById('authModal').classList.add('hidden');
+      showToast('Guest mode is ready. Happy studying!', 'success');
+    };
+    window.openAuthModalManually = () => document.getElementById('authModal').classList.remove('hidden');
+    window.logoutUser = async () => {
+      if (auth) await signOut(auth);
+      sessionStorage.removeItem('promenthiGuest');
+      document.getElementById('userProfileBadge').classList.add('hidden');
+      document.getElementById('authModal').classList.remove('hidden');
+      showToast('You have been signed out.', 'info');
+    };
+
+    window.showToast = (message, type='info') => {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-info';
+      toast.className = 'toast glass rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-3 shadow-xl';
+      toast.innerHTML = `<i class="fa-solid ${icon} text-emerald-400"></i><span></span>`;
+      toast.querySelector('span').textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3600);
+    };
+
+    // Reveal sections as they enter the viewport.
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // Scroll progress and active navigation.
+    const progress = document.getElementById('scrollProgress');
+    const navLinks = [...document.querySelectorAll('.nav-link')];
+    const sections = ['home','focus','insights','method'].map(id => document.getElementById(id)).filter(Boolean);
+    const updateScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progress.style.width = `${max > 0 ? (window.scrollY / max) * 100 : 0}%`;
+      let current = 'home';
+      sections.forEach(section => { if (window.scrollY >= section.offsetTop - 150) current = section.id; });
+      navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${current}`));
+    };
+    window.addEventListener('scroll', updateScroll, { passive:true });
+    updateScroll();
+
+    // Motivational quotes rotate without repeating until the full set has appeared.
+    const quotes = [
+      ['Great things are done by a series of small things brought together.','Vincent van Gogh'],
+      ['It always seems impossible until it’s done.','Nelson Mandela'],
+      ['The secret of getting ahead is getting started.','Mark Twain'],
+      ['Success is the sum of small efforts, repeated day in and day out.','Robert Collier'],
+      ['You do not have to see the whole staircase, just take the first step.','Martin Luther King Jr.'],
+      ['The future depends on what you do today.','Mahatma Gandhi'],
+      ['Well done is better than well said.','Benjamin Franklin'],
+      ['Believe you can and you’re halfway there.','Theodore Roosevelt'],
+      ['The expert in anything was once a beginner.','Helen Hayes'],
+      ['Little by little, one travels far.','J. R. R. Tolkien'],
+      ['Learning never exhausts the mind.','Leonardo da Vinci'],
+      ['Don’t let what you cannot do interfere with what you can do.','John Wooden']
+    ];
+    let quoteBag = [], lastQuote = -1;
+    window.loadNewQuote = () => {
+      if (!quoteBag.length) {
+        quoteBag = quotes.map((_, i) => i).filter(i => i !== lastQuote);
+        for (let i = quoteBag.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [quoteBag[i], quoteBag[j]] = [quoteBag[j], quoteBag[i]];
+        }
+      }
+      const index = quoteBag.pop();
+      lastQuote = index;
+      const text = document.getElementById('motivationalQuoteText');
+      text.style.opacity = '0';
+      setTimeout(() => {
+        text.textContent = `“${quotes[index][0]}”`;
+        document.getElementById('motivationalQuoteAuthor').textContent = `— ${quotes[index][1]}`;
+        text.style.transition = 'opacity .35s ease';
+        text.style.opacity = '1';
+      }, 140);
+    };
+    window.loadNewQuote();
+
+    // Focus / break timer. Completion alert beeps for 10 seconds.
+    const FOCUS_SECONDS = 50 * 60, BREAK_SECONDS = 5 * 60;
+    let phase = 'focus', timeLeft = FOCUS_SECONDS, timerRunning = false, timerInterval = null;
+    let audioContext = null, beepTimeouts = [];
+    const circumference = 2 * Math.PI * 104;
+    const timerProgress = document.getElementById('timerProgress');
+    timerProgress.style.strokeDasharray = circumference;
+    function phaseDuration() { return phase === 'focus' ? FOCUS_SECONDS : BREAK_SECONDS; }
+    function renderTimer() {
+      const mins = Math.floor(timeLeft / 60), secs = timeLeft % 60;
+      document.getElementById('timerDisplay').textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      document.getElementById('phaseLabel').textContent = phase === 'focus' ? 'Focus session' : 'Break time';
+      document.getElementById('timerSubtext').textContent = timerRunning ? (phase === 'focus' ? 'Stay in your flow' : 'Take a breath') : 'Ready when you are';
+      document.getElementById('timerStatusBadge').className = `inline-flex items-center gap-2 mt-2 text-sm font-bold ${phase === 'focus' ? 'text-emerald-400' : 'text-cyan-400'}`;
+      document.getElementById('startPauseText').textContent = timerRunning ? 'Pause session' : (timeLeft === phaseDuration() ? (phase === 'focus' ? 'Start focus' : 'Start break') : 'Resume session');
+      document.querySelector('#startPauseBtn i').className = `fa-solid ${timerRunning ? 'fa-pause' : 'fa-play'} mr-2`;
+      timerProgress.style.strokeDashoffset = circumference * (1 - timeLeft / phaseDuration());
+    }
+    function playCompletionBeep() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        audioContext = audioContext || new AudioCtx();
+        if (audioContext.state === 'suspended') audioContext.resume();
+        beepTimeouts.forEach(clearTimeout);
+        beepTimeouts = [];
+        for (let t = 0; t < 10000; t += 650) {
+          beepTimeouts.push(setTimeout(() => {
+            if (!audioContext || audioContext.state === 'closed') return;
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 880;
+            gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.12, audioContext.currentTime + 0.025);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.22);
+            oscillator.connect(gain); gain.connect(audioContext.destination);
+            oscillator.start(); oscillator.stop(audioContext.currentTime + 0.24);
+          }, t));
+        }
+      } catch (error) { console.warn('Audio notification unavailable:', error); }
+    }
+    function stopBeep() { beepTimeouts.forEach(clearTimeout); beepTimeouts = []; }
+    function completePhase() {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      const completed = phase;
+      playCompletionBeep();
+      if (completed === 'focus') {
+        phase = 'break'; timeLeft = BREAK_SECONDS;
+        showToast('Focus session complete. Time for a 5-minute break!', 'success');
+      } else {
+        phase = 'focus'; timeLeft = FOCUS_SECONDS;
+        showToast('Break is over. Ready for another focus session?', 'success');
+      }
+      renderTimer();
+      document.getElementById('timerSubtext').textContent = completed === 'focus' ? 'Focus complete · recharge' : 'Break complete · welcome back';
+      loadNewQuote();
+    }
+    window.toggleTimer = () => {
+      if (timerRunning) {
+        timerRunning = false; clearInterval(timerInterval); renderTimer(); return;
+      }
+      stopBeep();
+      timerRunning = true;
+      if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+      renderTimer();
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) timeLeft--;
+        if (timeLeft <= 0) completePhase();
+        else renderTimer();
+      }, 1000);
+    };
+    window.resetTimer = () => {
+      timerRunning = false; clearInterval(timerInterval); stopBeep();
+      timeLeft = phaseDuration(); renderTimer();
+    };
+    window.skipPhase = () => {
+      timerRunning = false; clearInterval(timerInterval); stopBeep();
+      phase = phase === 'focus' ? 'break' : 'focus';
+      timeLeft = phaseDuration(); renderTimer();
+      showToast(phase === 'focus' ? 'Focus session is ready.' : 'Break time is ready.', 'info');
+    };
+    renderTimer();
+
+    // Weekly chart.
+    const chartCanvas = document.getElementById('weeklyChart');
+    if (chartCanvas && window.Chart) {
+      const chart = new Chart(chartCanvas.getContext('2d'), {
+        type:'bar',
+        data:{ labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets:[{
+          label:'Focus hours', data:[3.5,4,5.2,4.5,6,2,3],
+          backgroundColor:context => {
+            const chart = context.chart, area = chart.chartArea;
+            if (!area) return 'rgba(101,230,173,.65)';
+            const gradient = chart.ctx.createLinearGradient(0,area.top,0,area.bottom);
+            gradient.addColorStop(0,'#65e6ad'); gradient.addColorStop(1,'rgba(101,217,232,.28)');
+            return gradient;
+          },
+          borderRadius:9, borderSkipped:false, maxBarThickness:34
+        }]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{backgroundColor:'#10192b',titleColor:'#fff',bodyColor:'#cbd5e1',padding:12,displayColors:false}},
+          scales:{
+            y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.10)'},ticks:{color:'#94a3b8',font:{family:'DM Sans'},stepSize:2},border:{display:false}},
+            x:{grid:{display:false},ticks:{color:'#94a3b8',font:{family:'DM Sans'}},border:{display:false}}
+          }
+        }
+      });
+    }
+
+    window.toggleTheme = () => {
+      const root = document.documentElement;
+      const isLight = root.classList.toggle('light');
+      root.classList.toggle('dark', !isLight);
+      document.getElementById('themeIcon').className = `fa-solid ${isLight ? 'fa-sun' : 'fa-moon'}`;
+      document.querySelector('meta[name="theme-color"]').content = isLight ? '#f4f8f7' : '#080d18';
+      try { localStorage.setItem('promenthiTheme', isLight ? 'light' : 'dark'); } catch(e) {}
+    };
+    try {
+      if (localStorage.getItem('promenthiTheme') === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+        document.querySelector('meta[name="theme-color"]').content = '#f4f8f7';
+      }
+    } catch(e) {}
+  </script>
 </body>
 </html>
